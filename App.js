@@ -2,22 +2,28 @@ import { StatusBar } from "expo-status-bar";
 import React, { useState, useEffect } from "react";
 import { StyleSheet, Text, View, Button } from "react-native";
 import { BarCodeScanner } from "expo-barcode-scanner";
-import { useFonts } from "expo-font";
+import * as Font from "expo-font";
 import AppLoading from "expo-app-loading";
+
+const AppInfo = require("./app.json").expo;
 
 const IN = { First: "", Second: "" };
 let Status = "ОЖИДАНИЕ";
+console.log("START");
 export default function App() {
 	const [hasPermission, setHasPermission] = useState(null);
 	const [scanned, setScanned] = useState("");
+	const [fontsLoaded, setFontsLoaded] = useState(false);
 
-	let [fontsLoaded] = useFonts({
-		"Ubuntu-Mono": require("./assets/fonts/UbuntuMono/UbuntuMono-Regular.ttf"),
-		"Roboto-Mono": require("./assets/fonts/RobotoMono/RobotoMono-Regular.ttf"),
-	});
-	if (!fontsLoaded) {
-		return <AppLoading />;
-	}
+	const LoadFonts = async () => {
+		console.log(fontsLoaded);
+		await Font.loadAsync({
+			"Ubuntu-Mono": require("./assets/fonts/UbuntuMono/UbuntuMono-Regular.ttf"),
+			"Roboto-Mono": require("./assets/fonts/RobotoMono/RobotoMono-Regular.ttf"),
+		});
+
+		setFontsLoaded(true);
+	};
 
 	useEffect(() => {
 		(async () => {
@@ -25,6 +31,12 @@ export default function App() {
 			setHasPermission(status === "granted");
 		})();
 	}, []);
+
+	if (!fontsLoaded) {
+		LoadFonts();
+		return <AppLoading />;
+		// return LoadingScreen();
+	}
 
 	if (hasPermission === null) {
 		return <Text>Requesting for camera permission</Text>;
@@ -63,6 +75,15 @@ export default function App() {
 		setScanned("null");
 	};
 
+	function LoadingScreen() {
+		return (
+			<View style={styles.container}>
+				<Text>{AppInfo.name}</Text>
+				<Text>VERSION: {AppInfo.version}</Text>
+			</View>
+		);
+	}
+
 	return (
 		<View style={styles.container}>
 			<View style={styles.infoBox}>
@@ -97,7 +118,6 @@ const styles = StyleSheet.create({
 		justifyContent: "center",
 		position: "relative",
 		flex: 1,
-		fontFamily: "Ubuntu-Mono",
 	},
 	infoBox: {
 		display: "flex",
@@ -114,6 +134,5 @@ const styles = StyleSheet.create({
 	},
 	Noms: {
 		width: "50%",
-		fontFamily: "Ubuntu-Mono",
 	},
 });
